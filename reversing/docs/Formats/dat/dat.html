@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>.dat / .hdr / .datwin / .cc40tad — LEGO The Lord of the Rings</title>
+    <link rel="stylesheet" href="../../style/main.css">
+</head>
+
+<body class="doc-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html#home" target="_parent">Documentation</a><span>/</span><a href="../../index.html#Formats-dat" target="_parent">Formats</a><span>/</span>.dat / .hdr / .datwin / .cc40tad</nav>
+    <h1>.DAT / .HDR / .datwin / .CC40TAD (TT Games Virtual Archives)</h1>
+    <aside class="source-notice">
+        <p><strong>Empirical Ground Truth:</strong> Directly verified at 100% TOC path-hash accuracy across PS2 (<em>LSW1</em>, <em>LSW2</em>), PS3 (<em>TCS</em> through <em>Dimensions</em>), Xbox 360 (<em>PotC</em> <code>8,537</code> entries), and PC builds. <code>.CC40TAD</code> (<code>v-10/-11</code>) documented via reference parsers (<em>LEGO Worlds</em> / <em>Skywalker Saga</em>).</p>
+    </aside>
+    <section class="format-summary">
+        <p class="eyebrow">LEGO The Lord of the Rings · Virtual Filesystem Container · All Eras (2006–2024)</p>
+        <p>Primary block-aligned virtual archive container holding TT Games assets across Era 2–5, paired .HDR TOC headers, Double Eleven .datwin/.pkiwin remaster archives, and .CC40TAD.</p>
+        <dl>
+            <dt>File Extensions</dt>
+            <dd><code>.DAT</code>, <code>.HDR</code>, <code>.datwin</code>, <code>.pkiwin</code>, <code>.pkdwin</code>, <code>.CC40TAD</code></dd>
+            <dt>Archive Signatures</dt>
+            <dd><code>MkDat V3.26</code> / <code>MkDat v4.0</code> / <code>PakDat v1.01</code> / <code>.CC40TAD</code> / <code>0x12345678</code> canary (<code>.datwin</code>)</dd>
+            <dt>Compression Codecs</dt>
+            <dd><code>0</code> Raw, <code>2</code> <code>LZ2K</code>, <code>3</code> <code>DFLT</code> (bit-2 <code>^0x04</code>), <code>RNC\x02</code> (PS2 <em>LSW1</em>), <code>ZIPX</code> (RC4), <code>CMP2</code> (LZMA), <code>LZHAM</code></dd>
+            <dt>Path Hashing</dt>
+            <dd>Uppercase <code>FNV1a-32</code> (<code>TtPathHash</code>, seed <code>0x811C9DC5</code>, prime <code>0x00199933</code>, <code>/</code> &rarr; <code>\</code>)</dd>
+        </dl>
+    </section>
+    <p class="callout"><strong>Cross-Generation History:</strong> This page is scoped strictly to the versions and containers observed in this game. For multi-era evolution across Nu2, NXG, DX11, and NTT, see the <a href="../../../../../../reversing/docs/Travellers_Tales/Formats/dat/dat.html" target="_top">Parent LEGO Shared Specification</a>.</p>
+    <nav class="page-toc" aria-label="On this page">
+        <ul>
+            <li><a href="#overview">1. Overview &amp; Layout</a></li>
+            <li><a href="#relationships">2. Cross-Format Relationships</a></li>
+            <li><a href="#edge-cases">3. Edge Cases &amp; Unresolved Fields</a></li>
+            <li><a href="#pseudocode">4. Standalone Parser Pseudocode</a></li>
+        </ul>
+    </nav>
+    <section id="overview" class="doc-overview">
+        <div class="callout"><strong>Early v-5 Milestone:</strong> First PS3 build switching from <code>LZ2K</code> to <code>DFLT</code> (<code>9,767</code> compressed entries) and 12-byte directory trie nodes without external <code>.HDR</code>.</div>
+        <h2>Version Evolution &amp; Observed Builds</h2>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>DAT / HDR TOC Format Evolution Across TT Games Eras</caption>
+                <thead>
+                    <tr>
+                        <th>TOC Ver</th>
+                        <th>Archive Tag</th>
+                        <th>Node Size</th>
+                        <th>Multi-Vol / Split</th>
+                        <th>Compression</th>
+                        <th>Confirmed Observed Titles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>v-1</code></td>
+                        <td><code>MkDat</code> (Early PS2)</td>
+                        <td>8 B</td>
+                        <td>Single <code>GAME.DAT</code></td>
+                        <td>Raw / <code>RNC\x02</code> (519 in <em>LSW1</em>)</td>
+                        <td><em>LSW1</em> PS2 (4,223 entries, 100% hash), <em>LSW2</em> PS2 (8,600 raw, 100% hash)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-2</code></td>
+                        <td><code>MkDat V3.26</code></td>
+                        <td>8 B</td>
+                        <td>Single <code>GAME.DAT</code></td>
+                        <td>Raw / <code>LZ2K</code> (<code>2</code>)</td>
+                        <td><em>TCS</em> PS3 (13,859 entries, 100% hash), <em>Batman 1</em> PS3 (11,072 entries)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-3</code></td>
+                        <td><code>MkDat v4.0</code></td>
+                        <td>8 B</td>
+                        <td>Single <code>GAME.DAT</code></td>
+                        <td>Raw / <code>LZ2K</code> (<code>2</code>)</td>
+                        <td><em>Indy 2</em> PS3 (10,951 entries, 100% hash); <em>TCS</em> WinSteam PC (12,174 entries*)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-4</code></td>
+                        <td><code>PakDat v1.01</code></td>
+                        <td>8 B</td>
+                        <td>4–10 volumes (<code>GAME*.DAT</code>)</td>
+                        <td>Raw / <code>LZ2K</code> (<code>2</code>)</td>
+                        <td><em>HP 1–4</em> (7 vols), <em>CW</em> (5 vols), <em>PotC</em> PS3 &amp; X360 (6 vols, 8,537 entries), <em>HP 5–7</em> (10 vols), <em>BM2</em></td>
+                    </tr>
+                    <tr>
+                        <td>Early <code>v-5</code></td>
+                        <td><code>PakDat v1.01</code></td>
+                        <td>12 B</td>
+                        <td>7–14 volumes (no <code>.HDR</code>)</td>
+                        <td>Raw / <code>DFLT</code> (<code>3</code>)</td>
+                        <td><em>LOTR</em> PS3 (15,462), <em>Marvel 1</em> PS3 (14 vols, 33,354, 100% hash)</td>
+                    </tr>
+                    <tr>
+                        <td>Late <code>v-5</code></td>
+                        <td><code>PakDat v1.01</code> + <code>.HDR</code></td>
+                        <td>12 B</td>
+                        <td>Paired <code>.HDR</code>/<code>.DAT</code> + <code>PAD.DAT</code></td>
+                        <td>Raw / <code>DFLT</code> (<code>3</code>)</td>
+                        <td><em>Hobbit</em> PS3 (5 pairs, 42,391 entries, 100% hash)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-6</code></td>
+                        <td><code>.HDR</code>/<code>.DAT</code></td>
+                        <td>12 B</td>
+                        <td>4-vol transition</td>
+                        <td><code>DFLT</code></td>
+                        <td>Reference-documented intermediate (<em>TTGames-Explorer-Rebirth</em>)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-7</code></td>
+                        <td><code>.HDR</code>/<code>.DAT</code> + <code>CMP2</code></td>
+                        <td>12 B</td>
+                        <td>7 pairs + 3 <code>INSTALL0*.DAT</code></td>
+                        <td><code>DFLT</code> inside <code>LZMA</code></td>
+                        <td><em>Dimensions</em> PS3 (124,716 entries across 10 logical vols)</td>
+                    </tr>
+                    <tr>
+                        <td><code>v-10/-11</code></td>
+                        <td><code>.CC40TAD</code> [Ref]</td>
+                        <td>12 B</td>
+                        <td>Split multi-vol</td>
+                        <td><code>DFLT</code> / <code>ZIPX</code></td>
+                        <td><em>LEGO Worlds</em>, <em>Skywalker Saga</em> [Reference parsers]</td>
+                    </tr>
+                    <tr>
+                        <td>Remaster <code>v-1</code></td>
+                        <td><code>.datwin</code> + <code>.pkiwin</code></td>
+                        <td>12 B</td>
+                        <td>Split <code>GAME*.datwin</code></td>
+                        <td><code>LZHAM</code> / <code>zlib</code></td>
+                        <td><em>LEGO HP Collection</em> (2024 x64, <code>0x12345678</code> sentinel)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2>Binary Layout: Archive Footer, Header, and TOC Structures</h2>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>DAT / HDR Root Header &amp; Entry Records (Little-Endian TOC)</caption>
+                <thead>
+                    <tr>
+                        <th>Region / Offset</th>
+                        <th>Size</th>
+                        <th>Type</th>
+                        <th>Field</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>DAT+0x00</code></td>
+                        <td>4</td>
+                        <td><code>u32le</code></td>
+                        <td><code>toc_ptr</code></td>
+                        <td><code>(offset >> 8) | 0x80000000</code> in MkDat/PakDat, or negative-signed <code>i32le</code> TOC sector/byte offset.</td>
+                    </tr>
+                    <tr>
+                        <td><code>DAT+0x04</code></td>
+                        <td>4</td>
+                        <td><code>u32le</code></td>
+                        <td><code>toc_size</code></td>
+                        <td>Total byte length of embedded TOC block (zero or absent when external <code>.HDR</code> holds TOC).</td>
+                    </tr>
+                    <tr>
+                        <td><code>HDR+0x00</code></td>
+                        <td>4 / 4</td>
+                        <td><code>u32le / i32le</code></td>
+                        <td><code>toc_size, toc_ver</code></td>
+                        <td>Paired <code>.HDR</code> stores TOC byte size then negative TOC version (<code>-5</code>, <code>-7</code>); full TOC follows immediately.</td>
+                    </tr>
+                    <tr>
+                        <td><code>TOC+0x00</code></td>
+                        <td>8</td>
+                        <td><code>i32le[2]</code></td>
+                        <td><code>toc_ver, file_count</code></td>
+                        <td>Negative version (<code>-1..-7</code>) followed by <code>file_count</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Entry[i]</code> (16 B)</td>
+                        <td>4,4,4,4</td>
+                        <td><code>u32le[4]</code></td>
+                        <td><code>off_packed, comp_sz, uncomp_sz, meta</code></td>
+                        <td>For <code>v-1..-4</code>: <code>offset = off_packed * 0x100</code>, <code>meta</code> holds compression ID (low bits) &amp; optional chunk flags.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Entry[i]</code> (<code>v-5..v-7</code>)</td>
+                        <td>16 B</td>
+                        <td><code>u32le[4]</code></td>
+                        <td><code>offset256, comp_sz, uncomp_sz, meta</code></td>
+                        <td>Expanded volume index &amp; codec bits in <code>meta</code> (<code>comp_type = (meta &amp; 0xFF)</code> or chunk bitmask); block size 256 B (<code>&lt;&lt; 8</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Node[k]</code> (<code>8B / 12B</code>)</td>
+                        <td>8 or 12</td>
+                        <td><code>i16,i16,u32[,u16,i16]</code></td>
+                        <td><code>next, child_or_sib, name_off[, parent, entry_idx]</code></td>
+                        <td>Directory trie. <code>8B</code> infers parent from <code>prev_sib == 0 ? k-1 : parent[prev_sib]</code>; <code>12B</code> adds explicit <code>parent</code> and <code>entry_idx</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Tail Hashes</td>
+                        <td><code>4 * file_count</code></td>
+                        <td><code>u32le[]</code></td>
+                        <td><code>path_hashes</code></td>
+                        <td>Uppercase FNV1a-32 of every path (<code>TtPathHash</code>). Note: <em>TCS</em> PC Steam stores ascending values (<code>0x3c27d..</code>) here instead.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2>Compression &amp; Hashing Formulas</h2>
+        <ul>
+            <li><strong><code>TtPathHash(path)</code>:</strong> Start <code>h = 0x811C9DC5</code>. Replace <code>'/'</code> with <code>'\\'</code>, ASCII-uppercase each byte <code>c</code>, iterate <code>h = ((h ^ c) * 0x00199933) &amp; 0xFFFFFFFF</code>. Matches 100% of PS3/X360 entries across v-2..v-5 and 124,712/124,716 in <em>Dimensions</em> v-7.</li>
+            <li><strong><code>DFLT</code> (Codec 3):</strong> Series of 12-byte chunk headers (<code>"DFLT"</code>, <code>u32le comp_sz</code>, <code>u32le uncomp_sz</code>). If standard raw RFC 1951 Deflate fails, toggle bit 2 of the first payload byte (<code>payload[0] ^= 0x04</code>) before inflating.</li>
+            <li><strong><code>ZIPX</code> (Codec 6/RC4):</strong> 12-byte header (<code>"ZIPX"</code>, <code>u32le comp_sz</code>, <code>u32le data_sz</code>). Payload is encrypted with RC4 using the 4-byte little-endian representation of <code>data_sz</code> as the symmetric key!</li>
+            <li><strong><code>LZ2K</code> (Codec 2):</strong> 12-byte header (<code>"LZ2K"</code>, <code>u32le uncomp_sz</code>, <code>u32le comp_sz</code>). Uses dynamic 2-table Huffman + 8 KiB sliding ring buffer (<code>0x2000</code>, <code>pos_mask = 0x1FFF</code>). If <code>comp_sz == uncomp_sz</code>, copy raw payload.</li>
+        </ul>
+    </section>
+    <section id="relationships" class="section">
+        <h2>Cross-Format Relationships &amp; Dependencies</h2>
+        <div class="relationship-flow">
+            <h3>Referenced By (Upstream Containers / Loaders)</h3>
+            <ul>
+                <li><a href="../../Formats/bin/index.html"><code>EBOOT.BIN / .xex / .exe</code></a> — Mounts GAME*.DAT/.HDR volumes and resolves asset requests by FNV1a path hash.</li>
+                <li><code>PS3 .pkg / INSTALL0*.DAT</code> — DLC packages and CMP2 LZMA install volumes deliver extra GAME*.DAT/.HDR patches.</li>
+            </ul>
+            <h3>References (Downstream Assets / Sub-Formats)</h3>
+            <ul>
+                <li><a href="../../Formats/dat/datFormats/gsc.html"><code>.gsc / .ghg Models</code></a> — Primary level & character geometry archives stored inside .DAT.</li>
+                <li><a href="../../Formats/dat/datFormats/cd.html"><code>.edfile (.cd/.cpd/.as/.apj/.led)</code></a> — Reflected scene/character graphs referencing assets within the same mounted .DAT tree.</li>
+                <li><code>.res Resource Manifests</code> — Era 4 NuFileTree dependency lists indexing virtual .DAT paths.</li>
+                <li><a href="../../Formats/dat/datFormats/pak.html"><code>.pak / .pac Sub-Archives</code></a> — Secondary uncompressed asset bundles packed inside .DAT.</li>
+            </ul>
+        </div>
+    </section>
+    <section id="edge-cases" class="section">
+        <h2>Filtering, Edge Cases &amp; Unresolved Fields</h2>
+        <ul>
+            <li><strong><em>TCS</em> WinSteam Hash Anomaly (Unresolved):</strong> <code>GAME.DAT</code> (<code>v-3</code>, 12,174 entries) stores strictly ascending 32-bit values (<code>0x3c27d</code>, <code>0x51307</code>, <code>0x98a59</code>...) in the hash table instead of FNV1a-32; the exact hash/key polynomial used by that PC Steam build remains unresolved.</li>
+            <li><strong><em>Dimensions</em> 4 Non-Matching Hashes:</strong> 4 of 124,716 entries in <em>LEGO Dimensions</em> exhibit root/trailing separator quirks in path reconstruction.</li>
+            <li><strong>Empty Padding Files:</strong> <code>PAD.DAT</code> (up to 15.36 GB in <em>Hobbit</em>) contains only physical disc LBA padding and has no TOC entries.</li>
+            <li><strong>Mixed Offset Units in <code>.HDR</code>/<code>v-5..v-7</code>:</strong> Offsets multiply by 256-byte sector alignment (<code>offset &lt;&lt; 8</code>) except inside <code>CMP2</code>-unpacked volumes where byte offsets apply directly.</li>
+        </ul>
+    </section>
+    <section id="pseudocode" class="section">
+        <h2>Standalone Clean-Room Parser Pseudocode</h2>
+        <pre><code>function TtPathHash(path):
+    h = 0x811C9DC5
+    for ch in path:
+        c = ord(&#x27;\&#x27;) if ch == &#x27;/&#x27; else ord(ch.upper())
+        h = ((h ^ c) * 0x00199933) &amp; 0xFFFFFFFF
+    return h
+
+function ParseDatOrHdr(dat_stream, hdr_bytes=null):
+    if hdr_bytes != null:
+        toc_size, neg_ver = ReadI32LE2(hdr_bytes, 0)
+        toc = hdr_bytes[4 : 4 + toc_size]
+    else:
+        raw0, toc_size = ReadU32LE2(dat_stream, 0)
+        toc_off = raw0 &amp; 0x7FFFFFFF
+        toc = dat_stream.ReadAt(toc_off, toc_size)
+    ver = ReadI32LE(toc, 0); file_count = ReadU32LE(toc, 4); pos = 8
+    entries = []
+    for i in 0 .. file_count - 1:
+        off_raw, csz, usz, meta = ReadU32LE4(toc, pos); pos += 16
+        entries.append({off: off_raw * 256, csz: csz, usz: usz, meta: meta})
+    node_count = ReadU32LE(toc, pos); pos += 4
+    node_size = 8 if ver &gt;= -4 else 12
+    nodes = [ReadNode(toc, pos + k * node_size, node_size) for k in 0 .. node_count - 1]
+    pos += node_count * node_size
+    str_len = ReadU32LE(toc, pos); str_buf = toc[pos + 4 : pos + 4 + str_len]
+    ReconstructPathsFromTrie(entries, nodes, str_buf, node_size)
+    return entries
+
+function DecompressEntry(raw, codec, usz):
+    if codec == 0: return raw[:usz]
+    if codec == 2: return DecompressLZ2KChunks(raw)
+    if codec == 3:
+        out = []
+        p = 0
+        while p + 12 &lt;= len(raw) and raw[p:p+4] == &quot;DFLT&quot;:
+            csz, chunk_u = ReadU32LE2(raw, p + 4); pay = raw[p+12 : p+12+csz]; p += 12 + csz
+            if csz == chunk_u: out.append(pay)
+            else: out.append(TryRawInflate(pay) or TryRawInflate(ToggleBit2Byte0(pay)))
+        return Concat(out)
+    if codec == 6: return RC4DecryptZIPXChunks(raw)</code></pre>
+    </section>
+
+</body>
+
+</html>

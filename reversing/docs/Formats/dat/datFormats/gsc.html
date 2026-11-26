@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>.gsc / .nux / .nx2 (Levels) — LEGO The Lord of the Rings</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body class="doc-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html#home" target="_parent">Documentation</a><span>/</span><a href="../../../index.html#Formats-dat" target="_parent">Formats</a><span>/</span><a href="../../../Formats/dat/dat.html">.dat Archive</a><span>/</span>.gsc / .nux / .nx2 (Levels)</nav>
+    <h1>.GSC / .NUX / .NX2 (Level &amp; Environment Scene Geometry)</h1>
+    <aside class="source-notice">
+        <p><strong>Empirically Verified Across 14 Builds:</strong> Exact 4CC headers verified from LSW1 Xbox (<code>.nux</code>), LSW2 Xbox/X360 (<code>.nx2</code>/<code>02UN</code>), TCS/BM1 (<code>02UN</code>), Indy 2 (<code>OFNI 0x0A</code>), HP 1–4, Clone Wars (<code>OFNI 0x10</code>), PotC (<code>OFNI 0x12</code>), BM2/LOTR (<code>HSEM v0x2E+</code>), and Marvel 1/Hobbit/Dimensions (<code>HSEM v0xA1+</code> + <code>DXTV</code>).</p>
+    </aside>
+    <section class="format-summary">
+        <p class="eyebrow">LEGO The Lord of the Rings · Geometry &amp; Render Scenes · Nu2, OFNI, and HSEM Engines</p>
+        <p>Primary 3D environment containers spanning Era 1 Nu2 (.nux / .nx2), Era 2–3a 02UN &amp; OFNI v0x0A–0x12 (.gsc), and Era 3c–4 HSEM v0x15–0xAD+ (DXTV, LTMU, TDML, PSID, LOGH).</p>
+        <dl>
+            <dt>Extensions</dt>
+            <dd><code>.nux</code> (Era 1), <code>.nx2</code> (LSW2 Xbox), <code>.gsc</code> (Era 2–5)</dd>
+            <dt>Container Headers</dt>
+            <dd><code>NU20</code>/<code>NTBL0</code> (<code>.nx2</code>) &middot; <code>02UN</code>/<code>DAEH</code> &middot; <code>OFNI</code> &middot; <code>HSEM</code>+<code>DXTV</code></dd>
+            <dt>Mixed Endianness</dt>
+            <dd><code>HSEM</code> chunk tree is Big-Endian on all platforms; PC/DX11 float32 vertices auto-detect LE vs BE.</dd>
+        </dl>
+    </section>
+    <p class="callout"><strong>Cross-Generation History:</strong> This page is scoped strictly to the versions and containers observed in this game. For multi-era evolution across Nu2, NXG, DX11, and NTT, see the <a href="../../../../../../../reversing/docs/Travellers_Tales/Formats/dat/datFormats/gsc.html" target="_top">Parent LEGO Shared Specification</a>.</p>
+    <nav class="page-toc" aria-label="On this page">
+        <ul>
+            <li><a href="#overview">1. Overview &amp; Layout</a></li>
+            <li><a href="#relationships">2. Cross-Format Relationships</a></li>
+            <li><a href="#edge-cases">3. Edge Cases &amp; Unresolved Fields</a></li>
+            <li><a href="#pseudocode">4. Standalone Parser Pseudocode</a></li>
+        </ul>
+    </nav>
+    <section id="overview" class="doc-overview">
+        <h2>1. Cross-Era Magic &amp; Version Dispatch Table</h2>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>Scene File Container Variants (LSW1 2005 → Dimensions 2015)</caption>
+                <thead>
+                    <tr>
+                        <th>Era / Format</th>
+                        <th>Magic / Offsets</th>
+                        <th>Endianness</th>
+                        <th>Vertex/Index Layout &amp; Observed Games</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>.nux</code> (Nu1/2 Classic)</td>
+                        <td><code>+0x00 u32le 0</code>, section offset directory</td>
+                        <td>LE</td>
+                        <td>Direct Nu offset table (no <code>02UN</code> wrapper). <em>LSW1</em> Xbox.</td>
+                    </tr>
+                    <tr>
+                        <td><code>.nx2</code> (Nu20 Early)</td>
+                        <td><code>"NU20"</code> at <code>+0x00</code>, <code>"NTBL0"</code> at <code>+0x10</code></td>
+                        <td>LE</td>
+                        <td>NU20 scene tables without <code>02UN</code> prefix. <em>LSW2</em> Xbox.</td>
+                    </tr>
+                    <tr>
+                        <td><code>02UN</code> / <code>NU20</code></td>
+                        <td><code>"02UN"</code> at <code>0x00</code> or embedded <code>"NU20"</code>/<code>"DAEH"</code></td>
+                        <td>BE/LE</td>
+                        <td><code>DAEH</code>(+10) + <code>GSNH</code> vertex/index streams &amp; 16B command ring. <em>LSW2</em> 360, <em>TCS</em>, <em>BM1</em>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>OFNI</code> (<code>v0x0A..0x12</code>)</td>
+                        <td><code>"OFNI"</code> big-endian chunk (ver <code>0x0A</code>/<code>0x10</code>/<code>0x12</code>)</td>
+                        <td>BE</td>
+                        <td>Early Creator transition: <code>OFNI</code> scene metadata + <code>NU20</code>/<code>HSEM</code> blocks. <em>Indy 2</em>, <em>HP 1–4</em>, <em>CW</em>, <em>PotC</em>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>HSEM</code> (<code>v0x15..0x30</code>)</td>
+                        <td><code>"HSEM"</code> + <code>ver</code> + optional <code>"ROTV"</code></td>
+                        <td>BE (mixed PC VB)</td>
+                        <td>Unified NXG stream: inline DDS, <code>PSID</code> commands, <code>LTMU</code>/<code>TDML</code> materials, <code>LOGH</code> LODs. <em>HP 5–7</em>, <em>BM2</em>, <em>LOTR</em>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>HSEM v0xA1+</code> + <code>DXTV</code></td>
+                        <td><code>HSEM v0xA1..0xAD</code> + <code>"DXTV"</code> per VB</td>
+                        <td>BE (mixed PC VB)</td>
+                        <td>Adds explicit <code>"DXTV"</code> vertex-descriptor blocks and pairs by base path with <code>.nxg_textures</code> &amp; <code>.ps3_shaders</code>. <em>Marvel 1</em>, <em>Hobbit</em>, <em>Dimensions</em>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2>2. HSEM Chunk Tree, Vertex Attributes &amp; PSID / LTMU Bindings</h2>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>HSEM Vertex Attribute Type Table (TYPE_SIZES &amp; Semantics)</caption>
+                <thead>
+                    <tr>
+                        <th>Type ID</th>
+                        <th>Bytes</th>
+                        <th>Decoding</th>
+                        <th>Typical Semantic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>1..4</code></td>
+                        <td><code>4..16</code></td>
+                        <td><code>Float32</code> (x1..x4)</td>
+                        <td>Position (attr 0), Texture UV (attr 5/6/7)</td>
+                    </tr>
+                    <tr>
+                        <td><code>5</code></td>
+                        <td><code>4</code></td>
+                        <td><code>UByte4N</code> <code>(b / 127.5) - 1.0</code></td>
+                        <td>Normal (attr 1), Tangent, Binormal</td>
+                    </tr>
+                    <tr>
+                        <td><code>6..7</code></td>
+                        <td><code>8 / 4</code></td>
+                        <td><code>SInt16 / Byte</code> Skin Weights/Indices</td>
+                        <td>Bone indices/weights (<code>.ghg</code> skinned meshes)</td>
+                    </tr>
+                    <tr>
+                        <td><code>8..9</code></td>
+                        <td><code>4 / 4</code></td>
+                        <td><code>BGRA8 / RGBA8</code> Vertex Color</td>
+                        <td>Baked tint/AO (attr 2; remap all-zero black to white <code>1,1,1</code>)</td>
+                    </tr>
+                    <tr>
+                        <td><code>10</code></td>
+                        <td><code>4</code></td>
+                        <td><code>HalfFloat2</code> (IEEE 754 binary16)</td>
+                        <td>Compressed UV / Pos</td>
+                    </tr>
+                    <tr>
+                        <td><code>11</code></td>
+                        <td><code>2</code></td>
+                        <td><code>UInt16</code></td>
+                        <td>Packed index / scalar</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Triangle Winding &amp; PSID Binding:</strong> <code>prim_tp == 1</code> denotes a Triangle Strip with alternating parity per segment (<code>s &amp; 1 == 0</code> &rarr; CCW <code>(a,b,c)</code>; odd &rarr; <code>(a,c,b)</code>); <code>prim_tp == 0</code> or <code>4/5</code> denotes a Triangle List. <code>PSID</code> maps each <code>0xB300</code>/<code>0x8003</code> draw command opcode directly to an <code>LTMU</code> material index and inline <code>DDS</code> / <code>NU2T</code> texture slice.</p>
+    </section>
+    <section id="relationships" class="section">
+        <h2>Cross-Format Relationships &amp; Dependencies</h2>
+        <div class="relationship-flow">
+            <h3>Referenced By (Upstream Containers / Loaders)</h3>
+            <ul>
+                <li><a href="../../../Formats/dat/dat.html"><code>.DAT / .HDR</code></a> — Loaded per level directory (levels/<area>/<room>/<room>_nxg.gsc).</li>
+                <li><a href="../../../Formats/dat/datFormats/led.html"><code>.led Level Editor</code></a> — Places lights, triggers, cameras, and instances inside the .gsc room origin.</li>
+                <li><code>.res Manifest</code> — Preloads .gsc geometry alongside paired .nxg_textures and .ps3_shaders in Era 4.</li>
+            </ul>
+            <h3>References (Downstream Assets / Sub-Formats)</h3>
+            <ul>
+                <li><a href="../../../Formats/dat/datFormats/tex.html"><code>.tex / .nxg_textures</code></a> — Material texture slots resolve to external .tex or paired .nxg_textures in Era 4.</li>
+                <li><a href="../../../Formats/dat/datFormats/shaders.html"><code>.ps3_shaders / .pc_shaders</code></a> — HSCB / DXBC shader bytecode resolved via LTMU/TDML shader references.</li>
+                <li><a href="../../../Formats/dat/datFormats/por.html"><code>.por Visibility Portals</code></a> — Subdivides large .gsc room cells across doorway portals.</li>
+            </ul>
+        </div>
+    </section>
+    <section id="edge-cases" class="section">
+        <h2>Filtering, Edge Cases &amp; Unresolved Fields</h2>
+        <ul>
+            <li><strong>PS3 CellGcm / DDS Linear Pitch Bug:</strong> Inline <code>DDS </code> slices in Era 3c–4 often encode an incorrect <code>dwPitchOrLinearSize</code> at <code>+0x14</code>; recompute <code>max(1,(w+3)>>2)*max(1,(h+3)>>2)*(8 if DXT1 else 16)</code> before decoding.</li>
+            <li><strong><code>unk1 != 0</code> Shadow/Depth Pre-Passes:</strong> Mesh descriptors with <code>unk1 != 0</code> duplicate visible geometry for depth/shadow passes and contain no new visual draw calls.</li>
+            <li><strong>PC Little-Endian Vertices in Big-Endian <code>HSEM</code>:</strong> Test up to 16 <code>Float32</code> positions; pick LE if BE yields non-finite values, <code>|c| &gt; 10000</code>, or sub-normal magnitudes &lt; <code>1e-12</code>.</li>
+        </ul>
+    </section>
+    <section id="pseudocode" class="section">
+        <h2>Standalone Clean-Room Parser Pseudocode</h2>
+        <pre><code>function ParseSceneGeometry(buf):
+    if buf[0:4] == b&quot;NU20&quot;: return ParseNu20Stream(buf)
+    if buf[0:4] == b&quot;02UN&quot; or HasTag(buf[:512], &quot;GSNH&quot;): return ParseNu20Container(buf)
+    hsem = FindTag(buf[:524288], &quot;HSEM&quot;)
+    if hsem &lt; 0: return []
+    p = hsem + 4; ver = ReadU32BE(buf, p); p += 4
+    if buf[p:p+4] == &quot;ROTV&quot; or ver &gt;= 0xAD: p += 4
+    mesh_count = ReadU32BE(buf, p); p += 4
+    ltmu = FindTagFrom(buf, p, &quot;LTMU&quot;); psid = FindTagFrom(buf, p, &quot;PSID&quot;)
+    // Decode vertex buffers (handling DXTV when ver &gt;= 0xA1 and shared 0xC000xxxx refs),
+    // index buffers (u16be / u32be), LOGH LOD 0 filtering, PSID -&gt; LTMU -&gt; DDS binding,
+    // and quantized bounding-box deduplication.
+    return ExtractHsemSubmeshes(buf, p, mesh_count, ver, ltmu, psid)</code></pre>
+    </section>
+
+</body>
+
+</html>

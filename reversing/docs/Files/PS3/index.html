@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LEGO The Lord of the Rings (PS3)</title>
+    <link rel="stylesheet" href="../../style/main.css">
+</head>
+
+<body class="doc-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html#home" target="_parent">Documentation</a><span>/</span><a href="../../Files/index.html">Files</a><span>/</span>PS3</nav>
+    <h1>PS3 Filesystem &amp; Binary Notes</h1>
+    <aside class="source-notice">
+        <p><strong>Platform Inventory:</strong> Scoped to PS3 builds of LEGO The Lord of the Rings.</p>
+    </aside>
+    <section class="doc-overview">
+        <p>Inspected PS3 source builds and container structures for LEGO The Lord of the Rings.</p>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>PS3 Inspected Source Images &amp; Archives</caption>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Build / IDs</th>
+                        <th>Container &amp; TOC</th>
+                        <th>Observed Formats / Counts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>LEGO The Lord of the Rings (2012)</td>
+                        <td>7 vols (GAME + GAME0..5) · EBOOT 19,023,640 B</td>
+                        <td>Early TOC v-5 (7 vols, 12B nodes, no .HDR) · DFLT (9,767) / Raw (5,695)</td>
+                        <td>.led 2,483, .ps3_shaders 1,846, .gsc 1,597, .pak 1,384, .tex 1,362, .txt 1,320, .dno 742, .sf 513, .cpj 10</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>PS3 NPDRM Packages (<code>.pkg</code> / <code>.rap</code>)</h2>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>LEGO The Lord of the Rings PS3 Demo, PSN &amp; 7 DLC PKGs</caption>
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Content ID</th>
+                        <th>Type / DRM</th>
+                        <th>Size</th>
+                        <th>Items &amp; License Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Demo (EU / US)</td>
+                        <td><code>EP1018-NPEB90456_00 / UP1018-NPUB90849_00</code></td>
+                        <td>type=5 / drm=3</td>
+                        <td><code>705,076,880 / 694,705,072 B</code></td>
+                        <td>41 / 25 items; free Demo PKG.</td>
+                    </tr>
+                    <tr>
+                        <td>PSN Full Game (EU)</td>
+                        <td><code>EP1018-NPEB01169_00-LEGOLORDOFTHERNG</code></td>
+                        <td>type=5 / drm=2</td>
+                        <td><code>8,336,791,040 B</code></td>
+                        <td>46 items + <code>.rap</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>PSN Full Game (US)</td>
+                        <td><code>UP1018-NPUB30978_00-LEGOLORDOFTHERNG</code></td>
+                        <td>type=5 / drm=2</td>
+                        <td><code>8,335,446,912 B</code></td>
+                        <td>30 items + <code>.rap</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Middle-earth DLCs (US: Char 1/2, Weap 1)</td>
+                        <td><code>UP1018-BLUS30963_00-LEGOLOTRCHARPAK1/2, WEAPPAK1</code></td>
+                        <td>type=4 (DLC) / drm=2</td>
+                        <td><code>2,708,112 / 2,705,232 / 3,561,648 B</code></td>
+                        <td>Paired <code>.rap</code> keys.</td>
+                    </tr>
+                    <tr>
+                        <td>Middle-earth DLCs (EU: Char 1/2/3, Weap 1)</td>
+                        <td><code>EP1018-BLES01516_00-LEGOLOTRCHARPAK1/2/3, WEAPPAK1</code></td>
+                        <td>type=4 (DLC) / drm=2</td>
+                        <td><code>2,980,768 / 2,796,032 / 2,914,416 / 3,834,304 B</code></td>
+                        <td>Paired EU DLC packages.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+
+</html>

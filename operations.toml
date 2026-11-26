@@ -1,0 +1,9 @@
+title = "LEGO The Lord of the Rings Operations"
+
+[[operation]]
+id = 20
+Name = "Extract All Assets"
+run-all = false
+depends-on = []
+script_type = "lua"
+script = "{{Project_Root}}/EngineApps/Games/Lego/operations/ExtractModuleAssets.lua"

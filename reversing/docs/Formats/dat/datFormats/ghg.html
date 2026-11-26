@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>.ghg / .hgx / .hx2 (Chars) — LEGO The Lord of the Rings</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body class="doc-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html#home" target="_parent">Documentation</a><span>/</span><a href="../../../index.html#Formats-dat" target="_parent">Formats</a><span>/</span><a href="../../../Formats/dat/dat.html">.dat Archive</a><span>/</span>.ghg / .hgx / .hx2 (Chars)</nav>
+    <h1>.GHG / .HGX / .HX2 (Character, Vehicle &amp; Prop Geometry)</h1>
+    <aside class="source-notice">
+        <p><strong>Verified Across All 14 Inspected Builds:</strong> Including <em>LSW1</em> Xbox (<code>.hgx</code>), <em>LSW2</em> Xbox/X360 (<code>.hx2</code>/<code>02UN</code>), <em>TCS</em>/<em>BM1</em> (<code>NU20</code>+<code>GSNH</code>), <em>Indy 2</em>–<em>HP 5-7</em> (<code>OFNI</code>/<code>HSEM</code>), <em>BM2</em>/<em>LOTR</em> (<code>HSEM v0x30</code>), and <em>Marvel 1</em>/<em>Hobbit</em>/<em>Dimensions</em> (<code>HSEM v0xA9+</code> + <code>DXTV</code>).</p>
+    </aside>
+    <section class="format-summary">
+        <p class="eyebrow">LEGO The Lord of the Rings · Skeletal &amp; Prop Models · Nu2, OFNI, and HSEM Engines</p>
+        <p>Skinned and rigid character/vehicle/prop containers extending scene geometry with bone hierarchies (GSNH/m2 inverse-bind matrices), Rigid NuLayer filters, and LOD/breakup filtering.</p>
+        <dl>
+            <dt>Extensions</dt>
+            <dd><code>.hgx</code> (LSW1 Xbox), <code>.hx2</code> (LSW2 Xbox), <code>.ghg</code> (All X360 / PS3 / PC)</dd>
+            <dt>Headers</dt>
+            <dd><code>NU20</code>+<code>GSNH</code> &middot; <code>02UN</code>+<code>DAEH</code> &middot; <code>OFNI</code> &middot; <code>HSEM</code> (<code>v0x20..0xAE+</code>) + <code>DXTV</code></dd>
+            <dt>Skeleton Transform</dt>
+            <dd>Rigid limb transform <code>WorldBind[b] = InvertRigidMat4x4(m2[b])</code> from <code>GSNH+368</code></dd>
+        </dl>
+    </section>
+    <p class="callout"><strong>Cross-Generation History:</strong> This page is scoped strictly to the versions and containers observed in this game. For multi-era evolution across Nu2, NXG, DX11, and NTT, see the <a href="../../../../../../../reversing/docs/Travellers_Tales/Formats/dat/datFormats/ghg.html" target="_top">Parent LEGO Shared Specification</a>.</p>
+    <nav class="page-toc" aria-label="On this page">
+        <ul>
+            <li><a href="#overview">1. Overview &amp; Layout</a></li>
+            <li><a href="#relationships">2. Cross-Format Relationships</a></li>
+            <li><a href="#edge-cases">3. Edge Cases &amp; Unresolved Fields</a></li>
+            <li><a href="#pseudocode">4. Standalone Parser Pseudocode</a></li>
+        </ul>
+    </nav>
+    <section id="overview" class="doc-overview">
+        <h2>1. NU20 Character Rigging &amp; Rigid Part Transform</h2>
+        <p>Classic <code>.ghg</code> files open with <code>u32le nu20_rel</code> (pointing to <code>"NU20"</code>), <code>u16le n_tex</code>, sequential <code>24B + DDS</code> texture slices (cubemaps advance <code>tex_idx += 6</code> when signed width &lt; 0), length-prefixed Vertex Buffers, and UInt16 Index Buffers. Inside <code>NU20</code>, chunk <code>"GSNH"</code> stores:</p>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>GSNH Rigging &amp; Command Offsets (Relative to GSNH Tag)</caption>
+                <thead>
+                    <tr>
+                        <th>Offset</th>
+                        <th>Type</th>
+                        <th>Field</th>
+                        <th>Formula / Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>+280</code></td>
+                        <td><code>i32le</code></td>
+                        <td><code>r280</code></td>
+                        <td>Points to display command header: <code>hdr = GSNH+280+r280</code>; <code>cmd_base = hdr+8+I32(hdr+8)</code>, materials at <code>c0 == 0x380</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+368</code></td>
+                        <td><code>u32le</code></td>
+                        <td><code>nbones</code></td>
+                        <td>Skeleton bone count (<code>1..512</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+380</code></td>
+                        <td><code>i32le</code></td>
+                        <td><code>m2_rel</code></td>
+                        <td>Array of <code>nbones * 64B</code> row-vector 4&times;4 inverse bind matrices; invert rigid 3&times;3 transpose + <code>-R^T*p</code> to place limb vertices in character world space.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+408 / +412</code></td>
+                        <td><code>u32le, i32le</code></td>
+                        <td><code>n_layers, r412</code></td>
+                        <td><code>NuLayer</code> table (20B/entry): filters out <code>breakup</code>, <code>medium</code>, <code>lores</code>, <code>c3po</code>, and <code>tt2/3/4</code> layers while attaching rigid parts per bone.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2>2. Era 3c–4 HSEM Skinned &amp; LOD Rules</h2>
+        <ul>
+            <li><strong>Skinned Vertex Split Streams:</strong> HSEM characters commonly store positions &amp; bone weights in <code>VB[0]</code> (often BE/LE auto-detected Float32 + skin indices) and normals/colors/UVs in <code>VB[1]</code> matched by equal <code>nv</code> and shared <code>0xC000xxxx</code> resource IDs.</li>
+            <li><strong>Breakup Chunk Filtering:</strong> In <code>LOGH</code> LOD 0 (<code>first ceil(len(submeshes) / n_logh)</code>), when &ge; 3 submeshes carry bone influence (<code>blen &gt; 0</code>), all unskinned <code>blen == 0</code> debris/breakup chunks are discarded.</li>
+            <li><strong>Marvel 1+ Bridge (<code>ver &gt;= 0xA9</code>):</strong> Inserts <code>"DXTV"</code> + <code>u32be desc_ver</code> (<code>&lt;= 0x2D</code> fixed 16&times;2B slots vs dynamic attr count + 6B footer) on every Vertex Buffer.</li>
+        </ul>
+    </section>
+    <section id="relationships" class="section">
+        <h2>Cross-Format Relationships &amp; Dependencies</h2>
+        <div class="relationship-flow">
+            <h3>Referenced By (Upstream Containers / Loaders)</h3>
+            <ul>
+                <li><a href="../../../Formats/dat/datFormats/cd.html"><code>.cd / .cpd Definitions</code></a> — Character and customizable part definitions load char meshes by name.</li>
+                <li><code>.res Manifests</code> — Hobbit/Dimensions .res graphs list .ghg alongside .an4 and .nxg_textures.</li>
+            </ul>
+            <h3>References (Downstream Assets / Sub-Formats)</h3>
+            <ul>
+                <li><code>.an3 / .an4 Animations</code> — Skeletal bone transforms target bones matching GSNH / HSEM joint names.</li>
+                <li><a href="../../../Formats/dat/datFormats/tex.html"><code>.dds / .tex / .nxg_textures</code></a> — Embedded DDS slices or external platform textures bound by slot index.</li>
+                <li><a href="../../../Formats/dat/datFormats/shaders.html"><code>.ps3_shaders / .pc_shaders</code></a> — Character surface shaders resolved in Era 3c–4.</li>
+            </ul>
+        </div>
+    </section>
+    <section id="edge-cases" class="section">
+        <h2>Filtering, Edge Cases &amp; Unresolved Fields</h2>
+        <ul>
+            <li><strong>All-Black Color Override:</strong> UByte4 vertex colors where <code>R==G==B==0</code> represent unbaked white (<code>1.0, 1.0, 1.0</code>) on NXG minifigure meshes.</li>
+            <li><strong>Empty Proxy Locators:</strong> Small &lt;1 KB <code>.ghg</code> files act as collision/camera locators with 0 draw meshes; return empty list cleanly.</li>
+        </ul>
+    </section>
+    <section id="pseudocode" class="section">
+        <h2>Standalone Clean-Room Parser Pseudocode</h2>
+        <pre><code>CONST TYPE_SIZES = [0, 4, 8, 12, 16, 4, 8, 4, 4, 4, 4, 2]
+
+function ParseGhgCharacter(bytes):
+    prims = ParseNu20Character(bytes)
+    if len(prims) &gt; 0: return prims
+    return ParseHsemStream(bytes, filter_logh_lod0=True, drop_breakup_if_skinned=True)
+
+function InvertRigidMat4x4(m):
+    r_inv = [m[0], m[4], m[8],  m[1], m[5], m[9],  m[2], m[6], m[10]]
+    tx = -(m[12]*m[0] + m[13]*m[1] + m[14]*m[2])
+    ty = -(m[12]*m[4] + m[13]*m[5] + m[14]*m[6])
+    tz = -(m[12]*m[8] + m[13]*m[9] + m[14]*m[10])
+    return (r_inv, [tx, ty, tz])
+
+function DecodeTriangles(raw, vcnt, is_strip, clockwise_target):
+    out = []; n = len(raw)
+    if is_strip:
+        for s in 0 .. n - 3:
+            a, b, c = raw[s], raw[s+1], raw[s+2]
+            if 0 &lt;= a &lt; vcnt and 0 &lt;= b &lt; vcnt and 0 &lt;= c &lt; vcnt and a != b and b != c and a != c:
+                ccw_even = ((s &amp; 1) == 0)
+                emit_abc = (ccw_even and not clockwise_target) or (not ccw_even and clockwise_target)
+                out.extend((a, b, c) if emit_abc else (a, c, b))
+    else:
+        for i in range(0, n - (n % 3), 3):
+            a, b, c = raw[i], raw[i+1], raw[i+2]
+            if 0 &lt;= a &lt; vcnt and 0 &lt;= b &lt; vcnt and 0 &lt;= c &lt; vcnt and a != b and b != c and a != c:
+                out.extend((a, c, b) if clockwise_target else (a, b, c))
+    return out
+
+function ParseNu20Character(bytes):
+    if len(bytes) &lt; 8: return []
+    nu_off = ReadU32LE(bytes, 0) + 4
+    if nu_off &lt; 8 or bytes[nu_off : nu_off+4] != b&quot;NU20&quot;: return []
+    dds_by_slot, vbs, ibs = ReadNuPreambles(bytes, 4, nu_off)
+    tail = bytes[nu_off:]; gsnh = FindTag(tail, b&quot;GSNH&quot;)
+    nbones = ReadU32LE(tail, gsnh + 368)
+    m2_ptr = gsnh + 380 + ReadI32LE(tail, gsnh + 380)
+    world_binds = [InvertRigidMat4x4(ReadF32LE16(tail, m2_ptr + b*64)) for b in 0..nbones-1]
+    // Resolve GSNH+280 command ring (0x380 materials, 0x8E sentinel) and GSNH+412 NuLayer filters
+    return ExtractNuPrimitives(tail, gsnh, vbs, ibs, world_binds, dds_by_slot)</code></pre>
+    </section>
+
+</body>
+
+</html>

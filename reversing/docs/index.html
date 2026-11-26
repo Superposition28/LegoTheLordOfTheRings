@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LEGO The Lord of the Rings</title>
+    <link rel="stylesheet" href="style/main.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="#home" data-route="home">LEGO The Lord of the Rings</a>
+        <nav class="topbar-links" aria-label="Primary sections">
+            <a href="#home" data-route="home">Home</a>
+            <a href="#Guide" data-route="Guide">Guide</a>
+            <a href="#Files" data-route="Files">Files &amp; History</a>
+            <a href="#Formats-dat" data-route="Formats-dat">Formats</a>
+            <a href="../../../../reversing/docs/Travellers_Tales/index.html">Parent LEGO Hub</a>
+        </nav>
+    </header>
+    <main class="pages">
+        <section class="page home-layout home-page active" id="home">
+            <div class="doc-overview home-intro">
+                <h1>LEGO The Lord of the Rings — Format Documentation</h1>
+                <p>Scoped specification for <strong>LEGO The Lord of the Rings (2012)</strong> (PS3 <code>BLUS30963</code>, 7-vol <code>PakDat v1.01</code> early <code>v-5</code> with 12B trie nodes &amp; NO <code>.HDR</code>, switching archive codec to bit-2-toggled <code>DFLT</code>, introducing <code>.ps3_shaders</code>, <code>.cpj v25</code>, and <code>.aib v8</code>).</p>
+            </div>
+            <section class="format-coverage" aria-label="Format Documentation Coverage">
+                <div class="format-coverage-heading">
+                    <h2>Pipeline Format Coverage</h2>
+                    <p>Verified directly against extracted PS3, Xbox 360, Original Xbox, and PC builds (plus external reference parsers where noted).</p>
+                </div>
+                <ul class="format-coverage-legend">
+                    <li><span class="coverage-icon coverage-green" aria-hidden="true"></span><span class="coverage-status">Verified in This Series (31)</span><span class="coverage-detail">Dissected directly from this game&#x27;s inspected containers/files.</span></li>
+                    <li><span class="coverage-icon coverage-yellow" aria-hidden="true"></span><span class="coverage-status">Partial / Hardware-Specific (1)</span><span class="coverage-detail">Outer envelope &amp; crypto verified; DSP/GPU ISA microcode external.</span></li>
+                    <li><span class="coverage-icon coverage-grey" aria-hidden="true"></span><span class="coverage-status">Reference-Documented (0)</span><span class="coverage-detail">Documented via reference parsers without local source build.</span></li>
+                </ul>
+            </section>
+            <nav class="documentation-tree" aria-label="Documentation Map">
+                <div class="documentation-tree-heading">
+                    <h2>Documentation Map</h2>
+                    <p>Explore virtual filesystems, empirical disc censuses, cross-format dependency graphs, and standalone clean-room binary specs.</p>
+                </div>
+                <ul class="documentation-tree-root">
+                    <li class="documentation-tree-section documentation-tree-section-game">
+                        <a class="documentation-tree-root-link" href="#Files" data-route="Files">
+                            <span class="documentation-tree-kicker">Architecture &amp; Census</span>
+                            <span class="documentation-tree-title">Files / Engine History</span>
+                        </a>
+                        <ul class="documentation-tree-branch">
+                            <li>
+                                <a class="documentation-tree-group-link" href="#Guide" data-route="Guide">Documentation Standards</a>
+                            </li>
+                            <li>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a href="#Files-PS3" data-route="Files-PS3">PS3 Builds</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="documentation-tree-section documentation-tree-section-formats">
+                        <a class="documentation-tree-root-link" href="#Formats-dat" data-route="Formats-dat">
+                            <span class="documentation-tree-kicker">Clean-Room Specifications</span>
+                            <span class="documentation-tree-title">Formats (32)</span>
+                        </a>
+                        <ul class="documentation-tree-branch">
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">Boot, Executables &amp; Containers</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-dat" data-route="Formats-dat"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.dat / .hdr / .datwin / .cc40tad</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-bin" data-route="Formats-bin"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>EBOOT.BIN / ELF / NDS / GBA</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-pak" data-route="Formats-datFormats-pak"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.pak / .fpk (Sub-Archives)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-pac" data-route="Formats-datFormats-pac"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.pac (Animation Packs)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">3D Models, Geometry &amp; Terrain</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-gsc" data-route="Formats-datFormats-gsc"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.gsc / .nux / .nx2 (Levels)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-ghg" data-route="Formats-datFormats-ghg"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.ghg / .hgx / .hx2 (Chars)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">Textures, Fonts &amp; Shaders</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-tex" data-route="Formats-datFormats-tex"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.tex / .dds / .nxg_textures</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-shaders" data-route="Formats-datFormats-shaders"><span class="coverage-icon coverage-yellow" aria-hidden="true"></span><span>.ps3_shaders / .pc_shaders</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-ft2" data-route="Formats-datFormats-ft2"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.ft2 / .fnt / .cft / .qfn</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">Animations &amp; Cutscenes</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-cu2" data-route="Formats-datFormats-cu2"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.cu2 / .cu3 / .cbs / .cut</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">EdFile Reflection &amp; Scene Data</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-as" data-route="Formats-datFormats-as"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.as (EdFile AnimState)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-cd" data-route="Formats-datFormats-cd"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.cd (EdFile CharDef)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-cpd" data-route="Formats-datFormats-cpd"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.cpd (Character Parts)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-apj" data-route="Formats-datFormats-apj"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.apj / .cpj (EdFile Projects)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-led" data-route="Formats-datFormats-led"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.led (EdFile Level Data)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">Audio, Speech &amp; Video</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-sfx" data-route="Formats-datFormats-sfx"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.sfx (Sound Event Maps)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-msf" data-route="Formats-datFormats-msf"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.msf (PS3 ATRAC3+/PCM Audio)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-audio_streams" data-route="Formats-datFormats-audio_streams"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.vag / .wavx / .ogg / .ctr</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-fmv" data-route="Formats-datFormats-fmv"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.fmv (Bink Video)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">Scripts, UI, Text &amp; Config</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-sf" data-route="Formats-datFormats-sf"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.sf (ScriptFu State Machines)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-lua" data-route="Formats-datFormats-lua"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.lua (GUI &amp; Editor Scripts)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-txt" data-route="Formats-datFormats-txt"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.txt (Char/Game Configs)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-cfg" data-route="Formats-datFormats-cfg"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.cfg (Engine Boot Configs)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-csv" data-route="Formats-datFormats-csv"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.csv / .cqf / .gra (Strings &amp; Tables)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-sub" data-route="Formats-datFormats-sub"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.sub / .subopt / .srt (Subtitles)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">World, AI, Physics &amp; Portal Systems</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-dno" data-route="Formats-datFormats-dno"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.dno (PinnerDynamicsObj)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-par" data-route="Formats-datFormats-par"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.par (Part Hierarchies)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-ptl" data-route="Formats-datFormats-ptl"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.ptl (Particle Systems)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-giz" data-route="Formats-datFormats-giz"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.giz / .pgiz (World Gizmos)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-por" data-route="Formats-datFormats-por"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.por (TROP Portals)</span></a></li>
+                                    <li><a class="format-status-link" href="#Formats-datFormats-ai2" data-route="Formats-datFormats-ai2"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>.ai2 / .aib (AI Nav &amp; Grids)</span></a></li>
+                                </ul>
+                            </li>
+                            <li class="documentation-tree-format-group"><span class="documentation-tree-group-label">DLC &amp; Console Packages</span>
+                                <ul class="documentation-tree-leaves">
+                                    <li><a class="format-status-link" href="#Formats-datFormats-pkg_rap" data-route="Formats-datFormats-pkg_rap"><span class="coverage-icon coverage-green" aria-hidden="true"></span><span>PS3/PS4 .pkg / .rap / X360 LIVE</span></a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </section>
+        <iframe class="page" id="Guide" data-src="docs.html" src="about:blank" title="Guide" loading="lazy"></iframe>
+        <iframe class="page" id="Files" data-src="Files/index.html" src="about:blank" title="Files" loading="lazy"></iframe>
+        <iframe class="page" id="Files-PS3" data-src="Files/PS3/index.html" src="about:blank" title="Files-PS3" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-dat" data-src="Formats/dat/dat.html" src="about:blank" title="Formats-dat" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-bin" data-src="Formats/bin/index.html" src="about:blank" title="Formats-bin" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-pak" data-src="Formats/dat/datFormats/pak.html" src="about:blank" title="Formats-datFormats-pak" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-pac" data-src="Formats/dat/datFormats/pac.html" src="about:blank" title="Formats-datFormats-pac" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-gsc" data-src="Formats/dat/datFormats/gsc.html" src="about:blank" title="Formats-datFormats-gsc" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-ghg" data-src="Formats/dat/datFormats/ghg.html" src="about:blank" title="Formats-datFormats-ghg" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-tex" data-src="Formats/dat/datFormats/tex.html" src="about:blank" title="Formats-datFormats-tex" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-shaders" data-src="Formats/dat/datFormats/shaders.html" src="about:blank" title="Formats-datFormats-shaders" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-ft2" data-src="Formats/dat/datFormats/ft2.html" src="about:blank" title="Formats-datFormats-ft2" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-cu2" data-src="Formats/dat/datFormats/cu2.html" src="about:blank" title="Formats-datFormats-cu2" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-as" data-src="Formats/dat/datFormats/as.html" src="about:blank" title="Formats-datFormats-as" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-cd" data-src="Formats/dat/datFormats/cd.html" src="about:blank" title="Formats-datFormats-cd" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-cpd" data-src="Formats/dat/datFormats/cpd.html" src="about:blank" title="Formats-datFormats-cpd" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-apj" data-src="Formats/dat/datFormats/apj.html" src="about:blank" title="Formats-datFormats-apj" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-led" data-src="Formats/dat/datFormats/led.html" src="about:blank" title="Formats-datFormats-led" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-sfx" data-src="Formats/dat/datFormats/sfx.html" src="about:blank" title="Formats-datFormats-sfx" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-msf" data-src="Formats/dat/datFormats/msf.html" src="about:blank" title="Formats-datFormats-msf" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-audio_streams" data-src="Formats/dat/datFormats/audio_streams.html" src="about:blank" title="Formats-datFormats-audio_streams" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-fmv" data-src="Formats/dat/datFormats/fmv.html" src="about:blank" title="Formats-datFormats-fmv" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-sf" data-src="Formats/dat/datFormats/sf.html" src="about:blank" title="Formats-datFormats-sf" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-lua" data-src="Formats/dat/datFormats/lua.html" src="about:blank" title="Formats-datFormats-lua" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-txt" data-src="Formats/dat/datFormats/txt.html" src="about:blank" title="Formats-datFormats-txt" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-cfg" data-src="Formats/dat/datFormats/cfg.html" src="about:blank" title="Formats-datFormats-cfg" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-csv" data-src="Formats/dat/datFormats/csv.html" src="about:blank" title="Formats-datFormats-csv" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-sub" data-src="Formats/dat/datFormats/sub.html" src="about:blank" title="Formats-datFormats-sub" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-dno" data-src="Formats/dat/datFormats/dno.html" src="about:blank" title="Formats-datFormats-dno" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-par" data-src="Formats/dat/datFormats/par.html" src="about:blank" title="Formats-datFormats-par" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-ptl" data-src="Formats/dat/datFormats/ptl.html" src="about:blank" title="Formats-datFormats-ptl" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-giz" data-src="Formats/dat/datFormats/giz.html" src="about:blank" title="Formats-datFormats-giz" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-por" data-src="Formats/dat/datFormats/por.html" src="about:blank" title="Formats-datFormats-por" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-ai2" data-src="Formats/dat/datFormats/ai2.html" src="about:blank" title="Formats-datFormats-ai2" loading="lazy"></iframe>
+        <iframe class="page" id="Formats-datFormats-pkg_rap" data-src="Formats/dat/datFormats/pkg_rap.html" src="about:blank" title="Formats-datFormats-pkg_rap" loading="lazy"></iframe>
+    </main>
+    <script>
+        (function() {
+            const home = document.getElementById("home");
+            const frames = Array.from(document.querySelectorAll("iframe.page"));
+            const byId = Object.fromEntries(frames.map(f => [f.id, f]));
+
+            function show(route) {
+                const id = (route || "home").replace(/^#/, "");
+                home.classList.remove("active");
+                frames.forEach(f => f.classList.remove("active"));
+                if (id === "home" || !byId[id]) {
+                    home.classList.add("active");
+                    return;
+                }
+                const frame = byId[id];
+                if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") {
+                    frame.setAttribute("src", frame.dataset.src);
+                }
+                frame.classList.add("active");
+            }
+            window.addEventListener("hashchange", () => show(location.hash));
+            document.addEventListener("click", (ev) => {
+                const a = ev.target.closest("a[data-route]");
+                if (a) {
+                    const r = a.dataset.route;
+                    if (location.hash.replace(/^#/, "") === r) show(r);
+                }
+            });
+            show(location.hash);
+        })();
+    </script>
+</body>
+
+</html>

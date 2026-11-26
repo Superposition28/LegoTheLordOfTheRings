@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>.sub / .subopt / .srt (Subtitles) — LEGO The Lord of the Rings</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body class="doc-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html#home" target="_parent">Documentation</a><span>/</span><a href="../../../index.html#Formats-dat" target="_parent">Formats</a><span>/</span><a href="../../../Formats/dat/dat.html">.dat Archive</a><span>/</span>.sub / .subopt / .srt (Subtitles)</nav>
+    <h1>.SUB, .SUBOPT &amp; .SRT (Cutscene Subtitle Timings)</h1>
+    <aside class="source-notice">
+        <p><strong>Dissected Directly:</strong> <em>BM2</em> (`185 .sub`), <em>LOTR</em> (`257 .sub` + `8 .subopt`), <em>Marvel 1</em> (`311 .sub` + `1 .subopt`), <em>Hobbit</em> (`339 .sub` + `16 .subopt`), <em>Dimensions</em> (`443 .sub` + `2 .subopt` + `3 .srt`).</p>
+    </aside>
+    <section class="format-summary">
+        <p class="eyebrow">LEGO The Lord of the Rings · Cutscene Localization · Era 3c–4 (BM2 through Dimensions)</p>
+        <p>Plaintext "Cornwall strings file" timing manifests pairing subtitle line IDs (from .csv) with start_time / end_time in frames or seconds during .cu3 cutscenes.</p>
+        <dl>
+            <dt>Extensions</dt>
+            <dd><code>.sub</code>, <code>.subopt</code> (postcredits/optional subtitles), <code>.srt</code> (SubRip in <em>Dimensions</em>)</dd>
+            <dt>Format</dt>
+            <dd>Plaintext (`//Cornwall strings file`, `StringsFile "...csv"`, `Subtitle text "DX_..."`)</dd>
+        </dl>
+    </section>
+    <p class="callout"><strong>Cross-Generation History:</strong> This page is scoped strictly to the versions and containers observed in this game. For multi-era evolution across Nu2, NXG, DX11, and NTT, see the <a href="../../../../../../../reversing/docs/Travellers_Tales/Formats/dat/datFormats/sub.html" target="_top">Parent LEGO Shared Specification</a>.</p>
+    <nav class="page-toc" aria-label="On this page">
+        <ul>
+            <li><a href="#overview">1. Overview &amp; Layout</a></li>
+            <li><a href="#relationships">2. Cross-Format Relationships</a></li>
+            <li><a href="#edge-cases">3. Edge Cases &amp; Unresolved Fields</a></li>
+            <li><a href="#pseudocode">4. Standalone Parser Pseudocode</a></li>
+        </ul>
+    </nav>
+    <section id="overview" class="doc-overview">
+        <p>Example from <em>Marvel 1</em> <code>postcredits_b.subopt</code>: <code>Subtitle text "GUARDIANS_GALAXY" always_on start_time 17 end_time 20</code>.</p>
+        <div class="table-scroll">
+            <table class="format-counts">
+                <caption>Subtitle File Directives</caption>
+                <thead>
+                    <tr>
+                        <th>Directive / Extension</th>
+                        <th>Observed Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>StringsFile "&lt;name&gt;.csv"</code></td>
+                        <td>Links the cutscene <code>.sub</code> to its localized string table.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Subtitle text "&lt;KEY&gt;"</code></td>
+                        <td>Queues subtitle key (`start_time`, `end_time`, optional `always_on` in `.subopt`).</td>
+                    </tr>
+                    <tr>
+                        <td><code>.srt</code> (<em>Dimensions</em> x3)</td>
+                        <td>Standard UTF-8 SubRip timecoded video captions.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section id="relationships" class="section">
+        <h2>Cross-Format Relationships &amp; Dependencies</h2>
+        <div class="relationship-flow">
+            <h3>Referenced By (Upstream Containers / Loaders)</h3>
+            <ul>
+                <li><a href="../../../Formats/dat/datFormats/cu2.html"><code>.cu3 Cutscenes</code></a> — Paired 1:1 with cutscene .cu3 folders.</li>
+            </ul>
+            <h3>References (Downstream Assets / Sub-Formats)</h3>
+            <ul>
+                <li><a href="../../../Formats/dat/datFormats/csv.html"><code>.csv String Tables</code></a> — Looks up localized dialogue string by text key.</li>
+            </ul>
+        </div>
+    </section>
+    <section id="edge-cases" class="section">
+        <h2>Filtering, Edge Cases &amp; Unresolved Fields</h2>
+        <ul>
+            <li><em>Dimensions</em> introduces 3 standard SubRip <code>.srt</code> files alongside TT's proprietary <code>.sub</code> format.</li>
+        </ul>
+    </section>
+    <section id="pseudocode" class="section">
+        <h2>Standalone Clean-Room Parser Pseudocode</h2>
+        <pre><code>function ParseSub(text):
+    return [line for line in text.splitlines() if line.strip().startswith(&quot;Subtitle&quot;)]</code></pre>
+    </section>
+
+</body>
+
+</html>
